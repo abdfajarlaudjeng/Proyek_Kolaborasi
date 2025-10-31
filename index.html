@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Data - Aplikasi Lingkungan</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; background-color: #f4f4f4; margin: 0; padding: 0; }
+        header { background-color: #00796b; color: #ffffff; padding: 1rem; text-align: center; }
+        nav { background: #333; color: #fff; padding: 0.5rem; text-align: center; }
+        nav a { color: #fff; padding: 0.5rem 1rem; text-decoration: none; }
+        nav a:hover { background: #555; }
+        nav a.active { background-color: #00796b; font-weight: bold; }
+        main { max-width: 900px; margin: 1rem auto; padding: 1rem; }
+        section { background: #fff; margin-bottom: 1rem; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h2 { color: #00796b; border-bottom: 2px solid #f4f4f4; padding-bottom: 0.5rem; }
+        form div { margin-bottom: 1rem; }
+        form label { display: block; margin-bottom: 0.3rem; font-weight: bold; }
+        form input[type="text"], form input[type="number"], form input[type="url"], form select, form textarea {
+            width: 100%; padding: 0.5rem; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;
+        }
+        form button { background: #00796b; color: #fff; padding: 0.7rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; }
+        form button:hover { background: #004d40; }
+        footer { text-align: center; padding: 1rem; background: #333; color: #fff; margin-top: 2rem; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Sistem Analisis Data Lingkungan Sekolah</h1>
+    </header>
+
+    <nav>
+        <a href="index.html" class="active">Input Data</a>
+        <a href="dashboard.html">Lihat Dashboard</a>
+    </nav>
+
+    <main>
+        <section id="data-entry">
+            <h2>Formulir Input Data Sampah</h2>
+            <p>Isi formulir ini setiap kali Anda melakukan observasi di lapangan.</p>
+            
+            <form action="#" method="POST" id="data-entry-form">
+                <div>
+                    <label for="nama_kelompok">Nama Kelompok:</label>
+                    <input type="text" id="nama_kelompok" name="nama_kelompok" required>
+                </div>
+                <div>
+                    <label for="lokasi">Lokasi Observasi:</label>
+                    <select id="lokasi" name="lokasi" required>
+                        <option value="">--Pilih Lokasi--</option>
+                        <option value="kantin">Kantin</option>
+                        <option value="taman_depan">Taman Depan</option>
+                        <option value="lapangan">Lapangan</option>
+                        <option value="depan_kelas_7">Depan Kelas 7</option>
+                        <option value="depan_kelas_8">Depan Kelas 8</option>
+                        <option value="depan_kelas_9">Depan Kelas 9</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="jenis_sampah">Jenis Sampah (yang paling dominan):</label>
+                    <select id="jenis_sampah" name="jenis_sampah" required>
+                        <option value="">--Pilih Jenis--</option>
+                        <option value="Plastik (Botol)">Plastik (Botol)</option>
+                        <option value="Plastik (Kemasan)">Plastik (Kemasan Makanan)</option>
+                        <option value="Kertas">Kertas</option>
+                        <option value="Organik (Daun)">Organik (Daun)</option>
+                        <option value="Organik (Sisa Makanan)">Organik (Sisa Makanan)</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="jumlah">Jumlah (Estimasi/Hitungan):</label>
+                    <input type="number" id="jumlah" name="jumlah" min="1" required>
+                </div>
+                <div>
+                    <label for="catatan">Catatan Tambahan (Opsional):</label>
+                    <textarea id="catatan" name="catatan" rows="3"></textarea>
+                </div>
+                <div>
+                    <button type="submit">Kirim Data</button>
+                </div>
+            </form>
+            <div id="form-message" style="margin-top: 15px; font-weight: bold;"></div>
+        </section>
+
+        </main>
+
+    <footer>
+        <p>&copy; 2024 - Proyek Fase D | (Nama Sekolah Anda)</p>
+    </footer>
+
+    <script>
+        // 1. GANTI DENGAN URL APLIKASI WEB ANDA
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbyMd3sC4_UY-XGN6XvtuMFZFwt8uNULjY-5Fld6to2qUGtycYvRlScOqVB3-rBfR8gqjw/exec'; // <-- GANTI INI
+        
+        const form = document.getElementById('data-entry-form');
+        const messageDiv = document.getElementById('form-message');
+
+        form.addEventListener('submit', e => {
+            e.preventDefault(); 
+            messageDiv.textContent = 'Sedang mengirim data...';
+            messageDiv.style.color = 'blue';
+
+            fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Success:', data);
+                    if (data.result === 'success') {
+                        messageDiv.textContent = 'Data berhasil terkirim!';
+                        messageDiv.style.color = 'green';
+                        form.reset(); 
+                        setTimeout(() => { messageDiv.textContent = ''; }, 5000);
+                    } else {
+                        throw new Error(data.message || 'Terjadi kesalahan');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error!', error.message);
+                    messageDiv.textContent = 'Oops! Terjadi kesalahan. ' + error.message;
+                    messageDiv.style.color = 'red';
+                });
+        });
+    </script>
+    </body>
+</html>
