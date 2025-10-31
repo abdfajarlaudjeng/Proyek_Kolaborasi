@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Data - Aplikasi Lingkungan SMPN 10 BANAWA SELATAN</title>
+    <title>Dashboard Data - Aplikasi Lingkungan</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; background-color: #f4f4f4; margin: 0; padding: 0; }
         header { background-color: #00796b; color: #ffffff; padding: 1rem; text-align: center; }
@@ -14,171 +15,215 @@
         main { max-width: 1200px; margin: 1rem auto; padding: 1rem; }
         section { background: #fff; margin-bottom: 1rem; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         h2 { color: #00796b; border-bottom: 2px solid #f4f4f4; padding-bottom: 0.5rem; }
-        
-        /* Style untuk Tabel */
+        #loading-data, #loading-karya { text-align: center; color: #555; }
+
+        /* Tata letak dashboard */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        @media (max-width: 800px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Tabel */
         #table-container { max-height: 400px; overflow-y: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
         table th, table td { border: 1px solid #ddd; padding: 0.5rem; text-align: left; }
         table th { background-color: #f2f2f2; position: sticky; top: 0; }
-
-        /* Style untuk Chart */
-        #chart-container { width: 100%; max-width: 600px; margin: 1rem auto; }
+        
+        /* Galeri */
+        .galeri-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+        .galeri-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+            background: #fafafa;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .galeri-card h4 { margin-top: 0; color: #004d40; }
+        .galeri-card p { font-size: 0.9rem; }
+        .galeri-card a {
+            display: inline-block;
+            background: #00796b;
+            color: #fff;
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .galeri-card a:hover { background: #004d40; }
+        .galeri-card .tipe {
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #555;
+            background: #eee;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+        }
+        
         footer { text-align: center; padding: 1rem; background: #333; color: #fff; margin-top: 2rem; }
-        #loading-message { font-size: 1.2rem; text-align: center; color: #555; }
     </style>
-    
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 </head>
 <body>
-
-    <header>
-        <h1>Sistem Analisis Data Lingkungan Sekolah SMP Negeri 10 Banawa Selatan</h1>
-    </header>
-
+    <header><h1>Sistem Analisis Data Lingkungan Sekolah</h1></header>
     <nav>
         <a href="index.html">Input Data</a>
         <a href="dashboard.html" class="active">Lihat Dashboard</a>
+        <a href="submit-karya.html">Kumpulkan Karya</a>
     </nav>
 
     <main>
-        <section id="dashboard">
-            <h2>Dashboard Data Lingkungan</h2>
-            <p id="loading-message">Memuat data dari Google Sheet...</p>
-
-            <h3>Grafik Total Sampah per Jenis</h3>
-            <div id="chart-container">
-                <canvas id="myChart"></canvas>
+        <section id="data-dashboard">
+            <h2>Dashboard Data Sampah</h2>
+            <p id="loading-data">Memuat data sampah...</p>
+            <div class="dashboard-grid">
+                <div id="chart-container">
+                    <h3>Grafik Total Sampah per Jenis</h3>
+                    <canvas id="myChart"></canvas>
+                </div>
+                <div id="table-container">
+                    <h3>Data Mentah (Semua Entri)</h3>
+                    </div>
             </div>
+        </section>
 
-            <h3>Data Mentah (Semua Entri)</h3>
-            <div id="table-container">
+        <section id="galeri-karya">
+            <h2>Galeri Karya Kampanye</h2>
+            <p id="loading-karya">Memuat galeri karya...</p>
+            <div class="galeri-container" id="galeri-container">
                 </div>
         </section>
     </main>
 
-    <footer>
-        <p>&copy; 2025 - Proyek Fase D | SMP Negeri 10 Banawa Selatan</p>
-    </footer>
+    <footer><p>&copy; 2025 - Proyek Fase D</p></footer>
 
     <script>
-        // 1. GANTI DENGAN URL APLIKASI WEB ANDA (URL yang SAMA dengan index.html)
-        const scriptURL = 'https://script.google.com/macros/s/AKfycby8Kl_0gMs3Ym6yP0nEiT8fMb41aC20RF7klgAEBy4sBRI4E_t97EKF_lKVULTjaw7_Lg/exec'; // <-- GANTI INI
-
-        const loadingMsg = document.getElementById('loading-message');
+        // GANTI DENGAN URL SCRIPT ANDA (URL YANG SAMA)
+        const scriptURL = 'https://script.google.com/macros/s/AKfycby8Kl_0gMs3Ym6yP0nEiT8fMb41aC20RF7klgAEBy4sBRI4E_t97EKF_lKVULTjaw7_Lg/exec';
+        
+        // Elemen Halaman
+        const loadingDataMsg = document.getElementById('loading-data');
+        const loadingKaryaMsg = document.getElementById('loading-karya');
         const tableContainer = document.getElementById('table-container');
+        const galeriContainer = document.getElementById('galeri-container');
         const ctx = document.getElementById('myChart').getContext('2d');
-        let myChart; // Variabel untuk menyimpan instance chart
+        let myChart;
 
-        // 2. Fungsi untuk mengambil data saat halaman dimuat
+        // Saat halaman dimuat, jalankan kedua fungsi fetch
         window.addEventListener('DOMContentLoaded', () => {
-            fetch(scriptURL) // Secara default, 'fetch' melakukan GET request
+            fetchDataSampah();
+            fetchDataKarya();
+        });
+
+        // ===================================
+        // FUNGSI 1: Ambil Data Sampah (Sheet1)
+        // ===================================
+        function fetchDataSampah() {
+            // Tambahkan parameter ?action=getData
+            fetch(scriptURL + "?action=getData")
                 .then(response => response.json())
                 .then(data => {
                     if (data.result === 'success') {
-                        loadingMsg.style.display = 'none'; // Sembunyikan pesan loading
-                        
-                        // Kirim data ke fungsi untuk membangun tabel dan grafik
+                        loadingDataMsg.style.display = 'none';
                         buildTable(data.data);
                         buildChart(data.data);
-                    } else {
-                        throw new Error(data.message || 'Gagal mengambil data');
-                    }
+                    } else { throw new Error(data.message || 'Gagal mengambil data'); }
                 })
                 .catch(error => {
-                    console.error('Error!', error.message);
-                    loadingMsg.textContent = 'Oops! Gagal memuat data. ' + error.message;
-                    loadingMsg.style.color = 'red';
+                    loadingDataMsg.textContent = 'Oops! Gagal memuat data sampah. ' + error.message;
+                    loadingDataMsg.style.color = 'red';
                 });
-        });
+        }
 
-        // 3. Fungsi untuk membangun Tabel HTML
+        // ===================================
+        // FUNGSI 2: Ambil Data Karya (KumpulanKarya)
+        // ===================================
+        function fetchDataKarya() {
+            // Tambahkan parameter ?action=getKarya
+            fetch(scriptURL + "?action=getKarya")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.result === 'success') {
+                        loadingKaryaMsg.style.display = 'none';
+                        buildGallery(data.data);
+                    } else { throw new Error(data.message || 'Gagal mengambil karya'); }
+                })
+                .catch(error => {
+                    loadingKaryaMsg.textContent = 'Oops! Gagal memuat galeri karya. ' + error.message;
+                    loadingKaryaMsg.style.color = 'red';
+                });
+        }
+
+        // --- Fungsi Pembantu (Builder) ---
+
         function buildTable(data) {
             let table = '<table>';
-            
-            // Buat Header Tabel (berdasarkan data pertama)
             if (data.length > 0) {
                 table += '<thead><tr>';
-                // Ambil header dari properti objek pertama
-                Object.keys(data[0]).forEach(key => {
-                    table += `<th>${key}</th>`;
-                });
+                Object.keys(data[0]).forEach(key => { table += `<th>${key}</th>`; });
                 table += '</tr></thead>';
             }
-
-            // Buat Body Tabel
             table += '<tbody>';
             data.forEach(row => {
                 table += '<tr>';
-                Object.values(row).forEach(value => {
-                    table += `<td>${value}</td>`;
-                });
+                Object.values(row).forEach(value => { table += `<td>${value}</td>`; });
                 table += '</tr>';
             });
             table += '</tbody></table>';
-
             tableContainer.innerHTML = table;
         }
 
-        // 4. Fungsi untuk memproses data dan membangun Grafik (Chart.js)
         function buildChart(data) {
-            // Kita akan proses data untuk dihitung total per 'jenis_sampah'
-            const totals = {}; // { "Plastik (Botol)": 50, "Kertas": 30 }
-
+            const totals = {};
             data.forEach(row => {
                 const jenis = row.jenis_sampah;
-                const jumlah = parseInt(row.jumlah, 10); // Ubah jumlah jadi angka
-                
-                if (totals[jenis]) {
-                    totals[jenis] += jumlah;
-                } else {
-                    totals[jenis] = jumlah;
-                }
+                const jumlah = parseInt(row.jumlah, 10) || 0;
+                totals[jenis] = (totals[jenis] || 0) + jumlah;
             });
 
-            const labels = Object.keys(totals);
-            const values = Object.values(totals);
-
-            // Hancurkan chart lama jika ada (untuk refresh)
-            if (myChart) {
-                myChart.destroy();
-            }
-
-            // Buat chart baru
+            if (myChart) { myChart.destroy(); }
             myChart = new Chart(ctx, {
-                type: 'doughnut', // Tipe grafik: 'bar', 'line', 'pie', 'doughnut'
+                type: 'doughnut',
                 data: {
-                    labels: labels,
+                    labels: Object.keys(totals),
                     datasets: [{
                         label: 'Total Sampah',
-                        data: values,
-                        backgroundColor: [
-                            'rgba(255, 99, 132, 0.7)',
-                            'rgba(54, 162, 235, 0.7)',
-                            'rgba(255, 206, 86, 0.7)',
-                            'rgba(75, 192, 192, 0.7)',
-                            'rgba(153, 102, 255, 0.7)',
-                            'rgba(255, 159, 64, 0.7)'
-                        ],
-                        borderColor: '#fff',
-                        borderWidth: 1
+                        data: Object.values(totals),
+                        backgroundColor: ['#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4'],
                     }]
                 },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        title: {
-                            display: true,
-                            text: 'Total Akumulasi Sampah per Jenis'
-                        }
-                    }
-                }
+                options: { responsive: true, plugins: { legend: { position: 'top' } } }
             });
         }
-
+        
+        function buildGallery(data) {
+            if (data.length === 0) {
+                galeriContainer.innerHTML = '<p>Belum ada karya yang dikumpulkan.</p>';
+                return;
+            }
+            
+            galeriContainer.innerHTML = ''; // Kosongkan galeri
+            data.reverse().forEach(karya => { // .reverse() agar yang terbaru di atas
+                let card = document.createElement('div');
+                card.className = 'galeri-card';
+                card.innerHTML = `
+                    <span class="tipe">${karya.tipe_karya}</span>
+                    <h4>${karya.nama_kelompok}</h4>
+                    <p>${karya.deskripsi_karya}</p>
+                    <a href="${karya.link_karya}" target="_blank">Lihat Karya</a>
+                `;
+                galeriContainer.appendChild(card);
+            });
+        }
     </script>
-    </body>
+</body>
 </html>
