@@ -7,7 +7,39 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; background-color: #f4f4f4; margin: 0; padding: 0; }
-        header { background-color: #00796b; color: #ffffff; padding: 1rem; text-align: center; }
+        
+        /* --- GAYA HEADER BARU (Disalin dari file lain) --- */
+        header { 
+            background-color: #00796b; 
+            color: #ffffff; 
+            padding: 1.5rem 1rem; /* Padding disesuaikan */
+            text-align: center; 
+        }
+        #logo-sekolah {
+            max-height: 80px; 
+            margin-bottom: 0.5rem;
+        }
+        #nama-sekolah {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0.5rem 0 0.25rem 0;
+            color: #ffffff;
+        }
+        header h1 {
+            margin-top: 0;
+            margin-bottom: 0.25rem;
+            color: #ffffff;
+            font-size: 1.8rem; /* Menyesuaikan h1 utama */
+        }
+        #sub-judul {
+            font-size: 1.1rem;
+            font-weight: 300; 
+            margin-top: 0;
+            font-style: italic;
+            color: #ffffff; 
+        }
+        /* --- AKHIR GAYA HEADER BARU --- */
+
         nav { background: #333; color: #fff; padding: 0.5rem; text-align: center; }
         nav a { color: #fff; padding: 0.5rem 1rem; text-decoration: none; }
         nav a:hover { background: #555; }
@@ -74,7 +106,16 @@
     </style>
 </head>
 <body>
-    <header><h1>Sistem Analisis Data Lingkungan Sekolah</h1></header>
+    
+    <header>
+        <img src="smpn10.jpg" alt="Logo Sekolah" id="logo-sekolah">
+        
+        <h2 id="nama-sekolah">Nama Sekolah Anda</h2> 
+        
+        <h1>Sistem Analisis Data Lingkungan Sekolah</h1>
+        
+        <h2 id="sub-judul">Kolaborasi Lintas Mata Pelajaran (Informatika, IPA (Biologi), Matematika (Statistika), Bahasa Indonesia)</h2>
+    </header>
     <nav>
         <a href="index.html">Input Data</a>
         <a href="dashboard.html" class="active">Lihat Dashboard</a>
@@ -166,14 +207,20 @@
         // --- Fungsi Pembantu (Builder) ---
 
         function buildTable(data) {
-            let table = '<table>';
-            if (data.length > 0) {
-                table += '<thead><tr>';
-                Object.keys(data[0]).forEach(key => { table += `<th>${key}</th>`; });
-                table += '</tr></thead>';
+            // Memastikan data tidak kosong sebelum membuat header
+            if (data.length === 0) {
+                tableContainer.innerHTML = '<h3>Data Mentah (Semua Entri)</h3><p>Belum ada data yang masuk.</p>';
+                return;
             }
+            
+            let table = '<h3>Data Mentah (Semua Entri)</h3><table>';
+            table += '<thead><tr>';
+            Object.keys(data[0]).forEach(key => { table += `<th>${key}</th>`; });
+            table += '</tr></thead>';
+            
             table += '<tbody>';
-            data.forEach(row => {
+            // .reverse() agar data terbaru di atas tabel
+            data.reverse().forEach(row => { 
                 table += '<tr>';
                 Object.values(row).forEach(value => { table += `<td>${value}</td>`; });
                 table += '</tr>';
@@ -192,16 +239,25 @@
 
             if (myChart) { myChart.destroy(); }
             myChart = new Chart(ctx, {
-                type: 'doughnut',
+                type: 'doughnut', // Anda bisa ganti ke 'bar' atau 'pie'
                 data: {
                     labels: Object.keys(totals),
                     datasets: [{
                         label: 'Total Sampah',
                         data: Object.values(totals),
-                        backgroundColor: ['#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4'],
+                        backgroundColor: [
+                            '#e6194B', '#3cb44b', '#ffe119', 
+                            '#4363d8', '#f58231', '#911eb4',
+                            '#42d4f4', '#f032e6', '#bfef45'
+                        ],
                     }]
                 },
-                options: { responsive: true, plugins: { legend: { position: 'top' } } }
+                options: { 
+                    responsive: true, 
+                    plugins: { 
+                        legend: { position: 'top' } 
+                    } 
+                }
             });
         }
         
@@ -215,11 +271,18 @@
             data.reverse().forEach(karya => { // .reverse() agar yang terbaru di atas
                 let card = document.createElement('div');
                 card.className = 'galeri-card';
+                
+                // Sanitasi sederhana untuk keamanan (opsional tapi disarankan)
+                const tipe = karya.tipe_karya ? String(karya.tipe_karya).replace(/</g, "&lt;") : 'Lainnya';
+                const kelompok = karya.nama_kelompok ? String(karya.nama_kelompok).replace(/</g, "&lt;") : 'Tanpa Nama';
+                const deskripsi = karya.deskripsi_karya ? String(karya.deskripsi_karya).replace(/</g, "&lt;") : 'Tidak ada deskripsi.';
+                const link = karya.link_karya ? String(karya.link_karya) : '#';
+
                 card.innerHTML = `
-                    <span class="tipe">${karya.tipe_karya}</span>
-                    <h4>${karya.nama_kelompok}</h4>
-                    <p>${karya.deskripsi_karya}</p>
-                    <a href="${karya.link_karya}" target="_blank">Lihat Karya</a>
+                    <span class="tipe">${tipe}</span>
+                    <h4>${kelompok}</h4>
+                    <p>${deskripsi}</p>
+                    <a href="${link}" target="_blank" rel="noopener noreferrer">Lihat Karya</a>
                 `;
                 galeriContainer.appendChild(card);
             });
